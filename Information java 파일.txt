@@ -1,0 +1,44 @@
+package 박지성;
+
+import java.io.Serializable;
+
+public class Information implements Serializable{
+	//기본적인 신상변수
+	String number; //고유번호
+	String name; //이름
+	int age;     //나이
+	String department; // 부서
+	String position;  //직급
+	
+	//성과 변수
+	int attendance; //이번달 근무일수
+	String success = "미응시"; //진급시험 합격여부
+	int license;    //자격증 총보유 개수
+	int newLicense; //이번달 새로운 자격증 보유개수
+	
+	//급여 변수
+	int base_Pay;     //기본급
+	int overtime_Allowance = 0; // 초과 근무 수당
+	int special_Allowance = 0; // 특별 수당
+	int common_Allowance = 0; //공통 수당
+	int allowance; //성과급
+	int tax;      //세금
+	int salary;		//전체적인 급여(실수령금액)
+	
+	
+	public Information(String number ,String name, int age, String department, String position, 
+			int attendance, String success, int license, int newLicense, int base_Pay, int overtime_Allowance, 
+			int special_Allowance, int common_Allowance, int allowance, int tax, int salary) { 
+		
+		this.number=number; this.name=name; this.age=age; this.department=department; this.position=position; 
+		this.attendance=attendance; this.success=success; this.license=license; this.newLicense=newLicense; this.base_Pay=base_Pay;
+		this.overtime_Allowance=overtime_Allowance; this.special_Allowance=special_Allowance; 
+		this.common_Allowance=common_Allowance; this.allowance=allowance; this.tax=tax; this.salary=salary;
+		
+	}
+	
+	public String toString() {
+		return "< "+ number +"번 " + name + " , " + age + "세"+" , "+ department + " , "+ position + " , "+ base_Pay + "원 "+" >";
+	}
+	
+}

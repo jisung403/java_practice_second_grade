@@ -1,0 +1,1040 @@
+package 박지성;
+import java.util.*;
+import java.util.Vector;
+
+
+import java.io.FileOutputStream; //파일 저장하기
+import java.io.IOException;
+import java.io.DataOutputStream;
+
+import java.io.FileInputStream; //파일 읽기
+import java.io.FileNotFoundException;
+import java.io.DataInputStream;
+
+import java.text.DecimalFormat; // 천단위 콤마찍어주기
+ 
+	class Staff {
+	 
+		Vector<Information> v = new Vector<Information>(); 		//Information 클래스를 벡터에 넣음
+		Vector<Information> s = new Vector<Information>(); // 퇴사자만 따로 받는 벡터를 만든다
+		Scanner Inf= new Scanner(System.in);	//클래스에 전체적으로 Scanner 선언을 한번에함 어디에나 적용됨
+		
+		
+		
+
+
+		int search_save[]; // 직원들의 정보를 위한 배열을 선언하였음
+		int search_save_retire[]; // 퇴사자들을 저장하기 위한 배열을 선언하였음
+		Calendar date1 = Calendar.getInstance(); // 캘린더 클래스이용
+		
+		public void read() throws Exception { //파일 불러오기
+			search_save = new int[v.size()]; // 벡터의 크기를 부여받음 직원들의 정보가 들어가 있다
+			search_save_retire = new int[s.size()]; // 벡터의 크기를 부여받음 직원들의 정보가 들어가 있다
+			DataInputStream dis = new DataInputStream(new FileInputStream("test.dat"));
+			int ss=dis.readInt(); //임시 변수임
+				
+			for(int i=0; i<ss; i++) { //월이 끝나고 1일이 되면 모든 성과와 모든 급여가 0으로 초기화됨 
+					
+					String number = dis.readUTF();
+					String name = dis.readUTF();
+					int age = dis.readInt();
+					String department = dis.readUTF();
+					String position = dis.readUTF();
+					int attendance = dis.readInt();
+					String success = dis.readUTF();	
+					int license = dis.readInt();
+					int newLicense = dis.readInt();
+					int base_Pay = dis.readInt();    
+					int overtime_Allowance = dis.readInt(); 
+					int special_Allowance = dis.readInt(); 
+					int common_Allowance = dis.readInt();
+					int allowance = dis.readInt(); 
+					int tax = dis.readInt();     
+					int salary = dis.readInt();		
+					
+					// 생성자를 통해 넣어준다.
+					v.add(new Information(number, name, age, department, position, attendance, success,
+							license, newLicense, base_Pay, overtime_Allowance, special_Allowance, common_Allowance,
+							allowance, tax, salary
+							));
+					
+					// 달이 바뀌고 1일이 되었을때 값을 초기화 해준다.
+					if(date1.get(Calendar.DATE) == 1) {
+						
+						//성과 없애기
+						attendance=0; //이번달 근무일수
+						success="미응시"; //진급시험 합격여부    
+						newLicense=0; //이번달 새로운 자격증 보유개수
+						
+						//급여 변수
+						overtime_Allowance=0; // 초과 근무 수당
+						special_Allowance=0; // 특별 수당
+						common_Allowance = 0; //공통 수당
+						allowance=0; //성과급
+						tax=0;      //세금
+						salary=0;		//전체적인 급여(실수령금액)
+						
+					}
+				}
+				dis.close();
+		}
+		
+	public void start() throws Exception { 	//첫 화면이 표시됨
+			
+			int choice; //항상 메뉴를 선택할때 사용하는 변수
+			read(); // 저장되있는 파일을 불러서 읽어준다.
+			
+			do {
+		System.out.println("<메인메뉴>"); 
+		System.out.println("날짜: " + toString(date1));
+		System.out.println("==================");
+		System.out.println("1.직원 정보 조회하기");
+		System.out.println("2.직원 정보 수정하기");
+		System.out.println("3.직원 성과 조회하기");
+		System.out.println("4.직원 성과 수정하기");
+		System.out.println("5.직원 급여 조회하기");
+		System.out.println("6.종료하기");
+		System.out.println("==================");
+		
+		choice = Inf.nextInt();
+		
+		switch(choice) {
+			case 1:
+				check_menu(); //신상자료 조회메뉴
+				break;
+			case 2:
+				Register_menu(); //직원정보 수정하기 메뉴 (추가, 삭제 , 수정)
+				break;
+			case 3:
+				Result_menu(); //성과 조회메뉴
+				break;
+			case 4:
+				Result_resister_menu(); //성과 수정하는 메뉴
+				break;
+			case 5:
+				Pay_menu(); //급여 조회 메뉴
+				break;
+			case 6:
+				Save(); //파일 종료 및 자동저장
+				return;
+			default:
+				System.out.println("1~6 사이의 정수를 입력해주세요.");
+		}
+		
+			}while(choice !=6);
+		
+	}
+	
+	public void check_menu() { 			//신상자료 조회메뉴
+		int choice;
+		do {
+		System.out.println("<조회메뉴>");
+		System.out.println("==================");
+		System.out.println("1.전체 정보 조회하기");
+		System.out.println("2.부서 정보 조회하기");
+		System.out.println("3.개인 정보 조회하기");
+		System.out.println("4.이전메뉴");
+		System.out.println("==================");
+		
+		choice = Inf.nextInt();
+		
+		switch(choice) {
+			case 1:
+				check();	//전체 정보조회
+				break;
+			case 2:
+				check_department();			//부서 정보조회
+				break;
+			case 3:
+				check_individual();			//개인 정보조회
+				break;
+			case 4:
+				return;
+			default:
+				System.out.println("1~4 사이의 정수를 입력해주세요.");
+		}
+		
+			}while(choice !=4);
+		
+	}
+	
+	public void check() {			// 직원 전체신상정보를 조회할 수 있음
+		System.out.println("< 직원 신상정보 조회하기 >");
+		System.out.println("==================");
+		System.out.println("고유번호             /성함   /나이 /부서  /직급 /기본급");
+		
+		for(int i=0; i<v.size(); i++) {
+			Information p = v.get(i);
+	
+			System.out.print(String.format( "%-12s" , p.number));
+			System.out.print(String.format( "%-5s" , p.name));
+			System.out.print(String.format( "%-4d" , p.age));
+			System.out.print(String.format( "%-5s" , p.department));
+			System.out.print(String.format( "%-5s" , p.position));
+			System.out.println(String.format( "%-5d" , p.base_Pay));
+		}
+		
+		System.out.println("==================");
+		return;
+	}
+	
+	public void check_department() { //부서별 신상조회 
+		Inf.nextLine(); // scanner 버퍼 비우기
+		System.out.println("신상을 조회하고 싶은 부서를 입력해주세요.");
+		String department = Inf.nextLine();
+		//입력받은 부서이름을 가지고 벡터에서 검색함
+		
+		System.out.println("< 부서별 신상정보 조회하기 >");
+		System.out.println("===================");
+		System.out.println("고유번호             /성함   /나이 /부서  /직급 /기본급");
+		for(int i=0; i<v.size(); i++) { 
+			Information p = v.get(i); 
+			if(p.department.equals(department)) {
+				System.out.print(String.format( "%-12s" , p.number));
+				System.out.print(String.format( "%-5s" , p.name));
+				System.out.print(String.format( "%-4d" , p.age));
+				System.out.print(String.format( "%-5s" , p.department));
+				System.out.print(String.format( "%-5s" , p.position));
+				System.out.println(String.format( "%-5d" , p.base_Pay));
+			}
+		}
+		
+		System.out.println("===================");
+		return;
+
+	}
+	
+	public void check_individual() { //직원 신상조회 
+		System.out.println("신상을 조회하고 싶은 직원의 고유번호를 입력해주세요.");
+		String Enter = Inf.nextLine(); //버퍼없애기
+		String number = Inf.nextLine();	
+		
+		System.out.println("==================");
+		for(int i=0; i<v.size(); i++) {
+			Information p = v.get(i);
+			if(p.number.equals(number)) {
+				System.out.println("고유번호             /성함   /나이 /부서  /직급 /기본급");
+				System.out.print(String.format( "%-12s" , p.number));
+				System.out.print(String.format( "%-5s" , p.name));
+				System.out.print(String.format( "%-4d" , p.age));
+				System.out.print(String.format( "%-5s" , p.department));
+				System.out.print(String.format( "%-5s" , p.position));
+				System.out.println(String.format( "%-5d" , p.base_Pay));
+				System.out.println("==================");
+			}
+		}
+	}
+	
+	public void Register_menu() throws Exception {     //직원정보 수정하기 메뉴판 (추가, 삭제 , 수정)
+		int choice;
+		
+		do {
+		System.out.println("<수정메뉴>");
+		System.out.println("==================");
+		System.out.println("1.직원 추가하기");
+		System.out.println("2.직원 삭제하기");
+		System.out.println("3.직원 수정하기");
+		System.out.println("4.퇴사자 명단 확인하기");
+		System.out.println("5.이전메뉴");
+		System.out.println("==================");
+		
+		choice = Inf.nextInt();
+		
+		switch(choice) {
+			case 1:
+				Register();			//직원 추가하기
+				break;
+			case 2:
+				Remove();			//직원 삭제하기
+				break;
+			case 3:
+				Modify();		//직원 수정하기
+				break;
+			case 4:
+				Retire();		//퇴사자 명단 확인하기
+			case 5:
+				return;
+			default:
+				System.out.println("1~5 사이의 정수를 입력해주세요.");
+		}
+		
+			}while(choice !=5);
+		//Inf.close();
+	}
+	
+	public void Register() { 		//직원의 이름과 나이를 추가하거나 삭제,수정이 가능함
+		int choice;
+		int index = 0; //검색을 위한 변수
+		
+		do {
+			
+			do{
+				System.out.println("추가하고 싶은 직원의 고유번호를 입력해주세요.");
+				String number = Inf.next();
+				for(int i=0; i<v.size(); i++) {
+					Information p = v.get(i);
+					if(p.number.equals(number)) {
+						System.out.println("※이미 있는 직원의 고유번호입니다. 다시입력해주세요※");
+						index = 1;
+						break;
+					}
+					index=0;
+				}
+			}while(index == 1);
+			
+			System.out.println("직원의 고유번호와 이름과 나이와 부서 그리고 직급과 기본급여를 빈칸으로 분리하여 입력해주세요");
+			
+			String number = Inf.next(); //고유번호
+			String name = Inf.next(); //이름
+			int age = Inf.nextInt(); //나이
+			String department = Inf.next(); //부서
+			String position = Inf.next(); //직급
+			
+			int attendance=0;
+			String success="미응시";
+			int license = 0;
+			int newLicense = 0;
+			
+			int base_Pay = Inf.nextInt(); //기본급여
+			
+			int overtime_Allowance = 0;
+			int special_Allowance = 0;
+			int common_Allowance = 0;
+			int allowance = 0;
+			int tax = 0;
+			int salary = 0;
+			
+			//생성자를 통해 넣어준다.
+			v.add(new Information(number, name, age, department, position, attendance, success,
+					license, newLicense, base_Pay, overtime_Allowance, special_Allowance, common_Allowance,
+					allowance, tax, salary
+					));
+		
+			/* 테스트 및 오류를 해결하기 위한 주석임
+		v.add(new Information("2003050407","박지성",23,"마케팅","대리",200)); //임시1
+		v.add(new Information("2003050404","박제성",24,"마케팅","사원",100)); //임시1
+		v.add(new Information("0504050221","박주영",25,"인사과","과장",300)); //임시2
+		v.add(new Information("9702231120","안정환",40,"개발과","부장",400)); //임시3
+			 */
+		while(true)
+		{
+			System.out.println("더 입력하시겠습니까? (예:1 아니오:2)");
+			choice = Inf.nextInt();
+			if(choice==1 || choice==2) {
+				break;
+			}
+			else {
+				System.out.println("잘못입력하셨습니다 1 혹은 2를 눌러주세요");
+			}
+				
+		}
+		
+
+		}while(choice ==1);
+		
+		
+		
+	
+		return;
+	}
+	public void Remove() throws Exception { 			//직원 정보 삭제하기 
+		int choice=0;
+		int index=0; //검색을 위한 변수
+		DataOutputStream dos = new DataOutputStream(new FileOutputStream("delete.dat")); //퇴사자 명단 파일저장
+		
+		do {
+		System.out.println("정보를 삭제하고 싶은 직원의 고유번호를 입력해주세요.");
+		String Enter = Inf.nextLine(); //버퍼 없애기
+		String number = Inf.nextLine(); 
+		
+		
+		for(int i=0; i<v.size(); i++) {
+			Information p = v.get(i);
+			if(p.number.equals(number)) {
+				System.out.println("직원정보: "+p.number +" /"+ p.name +" /" + p.age + " /" +p.department + " /" + p.position + " /" + p.base_Pay);
+				index=i;
+			}
+		}
+		
+		//직원 삭제
+		System.out.println("정말 삭제하시겠습니까? (예:1 아니오:2)");
+		choice = Inf.nextInt();
+		if(choice == 1) {
+			Retire_save(index); //퇴사자 덮어씌우기 방지를 위한 함수 add 처리
+			SaveDelete(index); //퇴사자 명단에 저장
+			v.remove(index); //벡터에서 지움
+			System.out.println("삭제되었습니다.");
+		}
+		else if(choice == 2) {
+			System.out.println("취소하였습니다.");
+		}
+		
+		//다시 물어보기
+		while(true)
+		{
+			System.out.println("더 입력하시겠습니까? (예:1 아니오:2)");
+			choice = Inf.nextInt();
+			if(choice==1 || choice==2) {
+				break;
+			}
+			else {
+				System.out.println("잘못입력하셨습니다 1 혹은 2를 눌러주세요");
+			}
+				
+		}
+		
+
+		}while(choice ==1);
+	}
+	
+	public void Modify() {		//직원 정보 수정하기
+		int choice=0;
+		int index = 0;
+		
+		do {
+		System.out.println("정보를 수정하고 싶은 직원의 고유번호를 입력해주세요.");
+		String Enter = Inf.nextLine(); //버퍼 없애기
+		String number = Inf.nextLine();
+		
+		//수정할 직원의 정보를 프린트해줌
+		 for(int i=0; i<v.size(); i++) {
+			Information p = v.get(i);
+			if(p.number.equals(number)) {
+				System.out.println("직원정보: "+p.number +" /"+ p.name +" /" + p.age + " /" +p.department + " /" + p.position + " /" + p.base_Pay);
+				index = i;
+			}
+		}
+		Information p = v.get(index); // 수정할 직원의 정보를 불러와 수정할 수 있게함
+		System.out.println("정말 수정하시겠습니까? (예:1 아니오:2)");
+		choice = Inf.nextInt();
+		
+		if(choice == 1) {
+			System.out.println("수정할 정보를 띄어쓰기 하여 차례대로 입력해주세요");
+			System.out.println("직원의 고유번호와 이름과 나이와 부서 그리고 직급과 기본급여를 빈칸으로 분리하여 입력해주세요");
+			
+			p.number = Inf.next(); 
+			p.name = Inf.next();
+			p.age = Inf.nextInt();
+			p.department = Inf.next();
+			p.position = Inf.next();
+			p.base_Pay = Inf.nextInt();
+			System.out.println("수정되었습니다.");
+		}
+		else if(choice == 2) {
+			System.out.println("취소하였습니다.");
+		}
+		
+		while(true)
+		{
+			System.out.println("더 입력하시겠습니까? (예:1 아니오:2)");
+			choice = Inf.nextInt();
+			if(choice==1 || choice==2) {
+				break;
+			}
+			else {
+				System.out.println("잘못입력하셨습니다 1 혹은 2를 눌러주세요");
+			}
+				
+		}
+		
+
+		}while(choice ==1);
+	}
+	
+	public void Result_menu() {  //성과 조회메뉴
+		int choice;
+		do {
+		System.out.println("<조회메뉴>");
+		System.out.println("==================");
+		System.out.println("1.전체 성과 조회하기");
+		System.out.println("2.부서 성과 조회하기");
+		System.out.println("3.개인 성과 조회하기");
+		System.out.println("4.이전메뉴");
+		System.out.println("==================");
+		
+		choice = Inf.nextInt();
+		
+		switch(choice) {
+			case 1:
+				Result();	//전체 성과조회
+				break;
+			case 2:
+				Result_department();			//부서 성과조회
+				break;
+			case 3:
+				Result_individual();			//개인 성과조회
+				break;
+			case 4:
+				return;
+			default:
+				System.out.println("1~4 사이의 정수를 입력해주세요.");
+		}
+		
+			}while(choice !=4);
+		//Inf.close();
+	}
+	
+	public void Result() {   //전체 성과조회 	
+		System.out.println("< 직원 전체 성과 조회하기 >");
+		System.out.println("==================");
+		System.out.println("고유번호             /성함   /나이 /부서   /직급 /근무일수 /진급시험 /새로운 자격증 /누적된 자격증");
+		
+		for(int i=0; i<v.size(); i++) {
+			Information p = v.get(i);
+			//System.out.println(p.number +" /"+ p.name +" /" + p.age + " /" +p.department + " /" + p.position 
+			//	+ " /" + p.attendance +" /"+ p.success +" /"+ p.newLicense +" /"+ p.license);
+			System.out.print(String.format( "%-12s" , p.number));
+			System.out.print(String.format( "%-5s" , p.name));
+			System.out.print(String.format( "%-4d" , p.age));
+			System.out.print(String.format( "%-5s" , p.department));
+			System.out.print(String.format( "%-5s" , p.position));
+			System.out.print(String.format( "%-8d" , p.attendance));
+			System.out.print(String.format( "%-9s" , p.success));
+			System.out.print(String.format( "%-10d" , p.newLicense));
+			System.out.println(String.format( "%-10d" , p.license));
+		}
+		
+		System.out.println("==================");
+		return;
+	}
+	
+	public void Result_department() { //부서별 성과조회
+		Inf.nextLine(); // scanner 버퍼 비우기
+		System.out.println("성과를 조회하고 싶은 부서를 입력해주세요.");
+		String department = Inf.nextLine();
+		//입력받은 부서이름을 가지고 벡터에서 검색함
+		
+		System.out.println("< 부서별  성과  조회하기 >");
+		System.out.println("==================");
+		System.out.println("고유번호             /성함   /나이 /부서   /직급 /근무일수 /진급시험 /새로운 자격증 /누적된 자격증");
+		
+		for(int i=0; i<v.size(); i++) { 
+			Information p = v.get(i);
+			if(p.department.equals(department))
+				System.out.print(String.format( "%-12s" , p.number));
+			System.out.print(String.format( "%-5s" , p.name));
+			System.out.print(String.format( "%-4d" , p.age));
+			System.out.print(String.format( "%-5s" , p.department));
+			System.out.print(String.format( "%-5s" , p.position));
+			System.out.print(String.format( "%-8d" , p.attendance));
+			System.out.print(String.format( "%-9s" , p.success));
+			System.out.print(String.format( "%-10d" , p.newLicense));
+			System.out.println(String.format( "%-10d" , p.license));
+		}
+		
+		System.out.println("==================");
+		return;
+	}
+	
+	public void Result_individual() { //개인별 성과조회
+		System.out.println("신상을 조회하고 싶은 직원의 고유번호를 입력해주세요.");
+		String Enter = Inf.nextLine(); //버퍼없애기
+		String number = Inf.nextLine();
+		
+		System.out.println("==================");
+		for(int i=0; i<v.size(); i++) {
+		Information p = v.get(i); 
+			if(p.number.equals(number)) {
+				System.out.println("고유번호             /성함   /나이 /부서   /직급 /근무일수 /진급시험 /새로운 자격증 /누적된 자격증");
+				System.out.print(String.format( "%-12s" , p.number));
+				System.out.print(String.format( "%-5s" , p.name));
+				System.out.print(String.format( "%-4d" , p.age));
+				System.out.print(String.format( "%-5s" , p.department));
+				System.out.print(String.format( "%-5s" , p.position));
+				System.out.print(String.format( "%-8d" , p.attendance));
+				System.out.print(String.format( "%-9s" , p.success));
+				System.out.print(String.format( "%-10d" , p.newLicense));
+				System.out.println(String.format( "%-10d" , p.license));
+			}
+		}
+		System.out.println("==================");
+		return;
+	}
+	
+	public void Result_resister_menu() { //성과 수정하는 메뉴
+		int choice;
+		int index;
+		
+		do {
+		System.out.println("<수정메뉴>");
+		System.out.println("==================");
+		System.out.println("1.초과근무 조회 및 수정하기");
+		System.out.println("2.특별수당 조회 및 수정하기");
+		System.out.println("3.공통수당 조회 및 수정하기");
+		System.out.println("4.이전메뉴");
+		System.out.println("==================");
+		//함수로
+		
+		//함수로 여기까지 따로
+		System.out.println("사용하고 싶은 메뉴의 번호를 입력해주세요.");
+		
+		choice = Inf.nextInt();
+		switch(choice) {
+			case 1:
+				index = Information_input();
+				Result_resister_overtime(index);
+				break;
+			case 2:
+				index = Information_input();
+				Result_resister_special(index);
+				break;
+			case 3:
+				Result_resister_common();
+				break;
+			case 4:
+				break;
+			default:
+				System.out.println("1~4 사이의 정수를 입력해주세요.");
+		}
+		
+			}while(choice !=4);
+		
+	}
+	
+	public int Information_input() {      // 성과 수정 고유번호 입력하기
+		int index=0; //검색을 위한 변수
+		
+		System.out.println("수정을 할 사람의 고유번호를 입력해주세요.");
+		String Enter = Inf.nextLine(); //앞에 Enter을 눌러 Buffer문제를 해결한 것임
+		String number = Inf.nextLine(); //고유번호 입력
+		
+		for(int i=0; i<v.size(); i++) {
+			Information p = v.get(i);
+			if(p.number.equals(number)) {
+				System.out.println(p.number + "의 " + p.name + "님이 선택되었습니다.");
+				index=i;
+			}
+		}return index;
+	}
+	
+	public void Result_resister_overtime(int index) { // 초과근무 조회 및 수정하기
+		Information p = v.get(index); // 누구를 원하는지 이어받음
+		
+		
+		
+		
+		System.out.println(p.name + "님은 이번달에 며칠동안 근무하셨습니까??");
+		p.attendance = Inf.nextInt();
+		
+		
+		if(p.attendance >= 21) { //초과 근무를 계산한다. (야간수당과 주말수당을 그냥 통합시켜 수당 5만원으로 합침)
+			
+			int overTimeWork; //초과 근무 일수
+			overTimeWork = p.attendance-20; 
+		
+			p.overtime_Allowance= 50000*overTimeWork;
+			System.out.println(p.name+"님은 이번달에 20일 하고 "+overTimeWork+"일을 초과로 근무하였습니다.");
+			System.out.println("따라서 이번달 초과 근무수당은 "+ p.overtime_Allowance+"원입니다.");
+			}
+		
+		else if(p.attendance==20) {
+			System.out.println(p.name+"님은 이번달에 20일을 일하셨습니다.");
+			System.out.println("초과 근무수당은 없습니다.");
+		}
+		
+		else
+		{
+			System.out.println(p.name+"님은 이번달에 20일을 일하지 못하셨습니다.");
+			System.out.println("초과 근무수당은 없습니다.");
+		}
+		
+		
+		
+		
+	}
+	
+	public void Result_resister_special(int index) {  // 특별수당 조회 및 수정하기 
+		int back; // do-while 문을 이용해 잘못입력했을 때 합격여부를 반복해서 물어주는 변수
+		Information p = v.get(index);
+
+		do {
+		
+			System.out.println("시험합격 여부를 입력해주세요 (합격,불합격)");
+			p.success= Inf.next();
+			back=0;
+			switch(p.success) {
+				case "합격":
+					System.out.println("진급시험의 합격에 따라 특별수당 100000원이 추가되었습니다.");
+					p.special_Allowance +=  100000;
+					break;
+				case "불합격":
+					System.out.println("진급시험에 불합격 하셔서 특별수당은 없습니다");
+					break;
+				default :
+					System.out.println("합격 혹은 불합격을 입력해주세요");
+					back=1;
+			}
+		}while(back==1);
+		
+		System.out.println("이번달에 새로운 자격증을 몇 개 취득하였습니까?");
+		int license = Inf.nextInt();
+		
+		System.out.println(p.name + " 님은 이번달에 " + license + "개의 자격증을 추가로 취득하셨습니다");
+		p.special_Allowance += license * 100000;
+		
+		System.out.println("현재 총 특별근무수당은 " + p.special_Allowance + "원 입니다.");
+		
+		p.license +=license; //총 자격증 보유개수를 누적시킴
+		p.newLicense +=license; //이번달의 새로운 자격증 보유개수를 누적시킴
+		
+	}
+	
+	public void Result_resister_common() {  // 공통수당 조회 및 수정하기 (추석과 설날)
+		for(int i=0; i<v.size(); i++) {
+			Information p = v.get(i);       
+			// 설날
+        	if(date1.get(Calendar.MONTH)== Calendar.JANUARY) {
+        		p.common_Allowance += 300000; 
+        	
+        		}
+        	// 추석
+        	else if(date1.get(Calendar.MONTH) == Calendar.SEPTEMBER){
+        		p.common_Allowance += 300000;
+        		
+        		}
+  
+		}
+		
+		if(date1.get(Calendar.MONTH)== Calendar.JANUARY || date1.get(Calendar.MONTH)== Calendar.SEPTEMBER) {
+        	System.out.println("이번달은 명절 보너스가 있습니다.(1월,9월)");
+        	
+        }
+		else {
+			System.out.println("이번달은 명절 보너스가 없습니다.");
+		}
+        
+	}
+	
+	private static String toString(Calendar date) { //이것은 캘린더 값으로 오늘이 무슨날인지 표기하기 위함이다
+        return date.get(Calendar.YEAR)+ "년 " + (date.get(Calendar.MONTH)+1) +"월 " + date.get(Calendar.DATE) +"일 ";
+    }
+
+	
+	public void Pay_menu() { //급여 조회 메뉴판
+		int choice;
+		do {
+		System.out.println("<조회메뉴>");
+		System.out.println("==================");
+		System.out.println("1.전체 급여 조회하기");
+		System.out.println("2.부서 급여 조회하기");
+		System.out.println("3.개인 급여 조회하기");
+		System.out.println("4.이전메뉴");
+		System.out.println("==================");
+		
+		choice = Inf.nextInt();
+		
+		switch(choice) {
+			case 1:
+				Pay();						//전체 급여조회
+				break;
+			case 2:
+				Pay_department();			//부서 급여조회
+				break;
+			case 3:
+				Pay_individual();			//개인 급여조회
+				break;
+			case 4:
+				return;
+			default:
+				System.out.println("1~4 사이의 정수를 입력해주세요.");
+		}
+		
+			}while(choice !=4);
+
+	}
+	
+	public void Pay() {   //급여 , return 안해도됨 여기서는 계산만 해줌 그리고 다른 클래스에서는 이 값을 가지고 출력만 해줌
+		int best = 0; //이달의 우수사원을 for문을 돌면서 검사하기 위한 변수선언
+		
+		
+		
+		System.out.println("==================");
+		System.out.println("고유번호             /이름  /나이  /부서  /직급 /기본급    /초과근무수당    /특별수당    /공통수당    /전체성과급    /세금    /실수령금액 ");
+		
+		//for문 빼기 공통으로 쓸수있게 변형도 생각하기
+		for(int i=0; i<v.size(); i++) {
+			Information p = v.get(i);
+		
+		// 급여 계산을 먼저해줘야 한다
+		p.allowance = p.overtime_Allowance + p.special_Allowance + p.common_Allowance;
+		p.tax =  (int) ((p.base_Pay + p.allowance) * 0.033);
+		p.salary = p.base_Pay + p.allowance - p.tax;
+		
+		//콤마가 찍혀진 숫자는 String으로 계산안되는 값으로 변하기 때문에 나중에 한다
+		DecimalFormat df = new DecimalFormat("###,###,###,###");
+		String overtime = df.format(p.overtime_Allowance);
+		String special = df.format(p.special_Allowance);
+		String common = df.format(p.common_Allowance);
+		String allowance = df.format(p.allowance);
+		String tax = df.format(p.tax);
+		String salary = df.format(p.salary);
+		String base = df.format(p.base_Pay);
+		
+		//변환이 완료됬으면 프린트해준다
+		System.out.print(String.format( "%-12s" , p.number));
+		System.out.print(String.format( "%-5s" , p.name));
+		System.out.print(String.format( "%-4d" , p.age));
+		System.out.print(String.format( "%-5s" , p.department));
+		System.out.print(String.format( "%-5s" , p.position));
+		System.out.print(String.format( "%-8s" , base));
+		System.out.print(String.format( "%-10s" , overtime));
+		System.out.print(String.format( "%-8s" , special));
+		System.out.print(String.format( "%-9s" , common));
+		System.out.print(String.format( "%-10s" , allowance));
+		System.out.print(String.format( "%-7s" , tax));
+		System.out.println(String.format( "%-10s" , salary));
+		
+		//우수사원 검사하기 (찾고 best변수에 저장해줘야됨)
+		double max=0;
+		
+		if( max < p.allowance) {
+			max = p.allowance;
+			best = i;
+			}
+		}
+		
+		System.out.println("==================");
+		
+		// 이달의 우수사원 수당만 보고 가장높은사람을 계시하기  (실시간으로 1등이 바껴야함)
+		Information p = v.get(best);
+		System.out.println("====이달의 우수사원====");
+		System.out.println("고유번호             /이름  /나이  /부서  /직급 /기본급    /초과근무수당    /특별수당    /공통수당    /전체성과급    /세금    /실수령금액 ");
+		System.out.print(String.format( "%-12s" , p.number));
+		System.out.print(String.format( "%-5s" , p.name));
+		System.out.print(String.format( "%-4d" , p.age));
+		System.out.print(String.format( "%-5s" , p.department));
+		System.out.print(String.format( "%-5s" , p.position));
+		System.out.print(String.format( "%-8s" , p.base_Pay));
+		System.out.print(String.format( "%-10d" , p.overtime_Allowance));
+		System.out.print(String.format( "%-8s" , p.special_Allowance));
+		System.out.print(String.format( "%-9d" , p.common_Allowance));
+		System.out.print(String.format( "%-10d" , p.allowance));
+		System.out.print(String.format( "%-7d" , p.tax));
+		System.out.println(String.format( "%-10d" , p.salary));
+		System.out.println("이달의 우수사원을 축하드립니다!");
+		System.out.println("==================");
+	}
+	
+	public void Pay_department() {				//부서별 급여 조회하기
+		Inf.nextLine(); // scanner 버퍼 비우기
+		System.out.println("급여를 조회하고 싶은 부서를 입력해주세요.");
+		String department = Inf.nextLine();
+		//입력받은 부서이름을 가지고 벡터에서 검색함
+		
+		System.out.println("< 부서별  급여  조회하기 >");
+		System.out.println("==================");
+		System.out.println("고유번호             /이름  /나이  /부서  /직급 /기본급    /초과근무수당    /특별수당    /공통수당    /전체성과급    /세금    /실수령금액 ");
+		
+		//for문 빼기 공통으로 쓸수있게 변형도 생각하기
+		for(int i=0; i<v.size(); i++) {
+			Information p = v.get(i);
+			if(p.department.equals(department)) {
+		//계산을 먼저해줘야 한다
+				p.allowance = p.overtime_Allowance + p.special_Allowance + p.common_Allowance;
+				p.tax =  (int) ((p.base_Pay + p.allowance) * 0.033);
+				p.salary = p.base_Pay + p.allowance - p.tax;
+		
+		//String으로 계산안되는 값으로 변하기 때문에 나중에 한다
+				DecimalFormat df = new DecimalFormat("###,###,###,###");
+				String overtime = df.format(p.overtime_Allowance);
+				String special = df.format(p.special_Allowance);
+				String common = df.format(p.common_Allowance);
+				String allowance = df.format(p.allowance);
+				String tax = df.format(p.tax);
+				String salary = df.format(p.salary);
+				String base = df.format(p.base_Pay);
+		
+		//변환이 완료됬으면 프린트해준다
+				System.out.print(String.format( "%-12s" , p.number));
+				System.out.print(String.format( "%-5s" , p.name));
+				System.out.print(String.format( "%-4d" , p.age));
+				System.out.print(String.format( "%-5s" , p.department));
+				System.out.print(String.format( "%-5s" , p.position));
+				System.out.print(String.format( "%-8s" , base));
+				System.out.print(String.format( "%-10s" , overtime));
+				System.out.print(String.format( "%-8s" , special));
+				System.out.print(String.format( "%-9s" , common));
+				System.out.print(String.format( "%-10s" , allowance));
+				System.out.print(String.format( "%-7s" , tax));
+				System.out.println(String.format( "%-10s" , salary));
+			}
+		}
+		System.out.println("==================");
+		return;
+	}
+	
+	public void Pay_individual() { 				//개인별 급여 조회하기
+		
+		System.out.println("신상을 조회하고 싶은 직원의 고유번호를 입력해주세요.");
+		String Enter = Inf.nextLine(); //버퍼없애기
+		String number = Inf.nextLine();
+		int index=0; //검색을 위한 변수
+		
+		for(int i=0; i<v.size(); i++) {
+			Information p = v.get(i); 
+			if(p.number.equals(number)) {
+		//계산을 먼저해줘야 한다
+				p.allowance = p.overtime_Allowance + p.special_Allowance + p.common_Allowance;
+				p.tax =  (int) ((p.base_Pay + p.allowance) * 0.033);
+				p.salary = p.base_Pay + p.allowance - p.tax;
+		
+		//String으로 계산안되는 값으로 변하기 때문에 나중에 한다
+				DecimalFormat df = new DecimalFormat("###,###,###,###");
+				String overtime = df.format(p.overtime_Allowance);
+				String special = df.format(p.special_Allowance);
+				String common = df.format(p.common_Allowance);
+				String allowance = df.format(p.allowance);
+				String tax = df.format(p.tax);
+				String salary = df.format(p.salary);
+				String base = df.format(p.base_Pay);
+		
+		//변환이 완료됬으면 프린트해준다
+				System.out.println("< 부서별  급여  조회하기 >");
+				System.out.println("==================");
+				System.out.println("고유번호             /이름  /나이  /부서  /직급 /기본급    /초과근무수당    /특별수당    /공통수당    /전체성과급    /세금    /실수령금액 ");
+				System.out.print(String.format( "%-12s" , p.number));
+				System.out.print(String.format( "%-5s" , p.name));
+				System.out.print(String.format( "%-4d" , p.age));
+				System.out.print(String.format( "%-5s" , p.department));
+				System.out.print(String.format( "%-5s" , p.position));
+				System.out.print(String.format( "%-8s" , base));
+				System.out.print(String.format( "%-10s" , overtime));
+				System.out.print(String.format( "%-8s" , special));
+				System.out.print(String.format( "%-9s" , common));
+				System.out.print(String.format( "%-10s" , allowance));
+				System.out.print(String.format( "%-7s" , tax));
+				System.out.println(String.format( "%-10s" , salary));
+				System.out.println("==================");
+			}
+		}
+		
+	}
+	
+	//퇴사자 명단 읽어주는곳
+	public void Retire() throws Exception {
+		DataInputStream dis = new DataInputStream(new FileInputStream("delete.dat"));
+		int ss=dis.readInt(); //임시 변수임
+		
+		for(int i=0; i<ss; i++) { //전체적으로 파일을 읽어줌
+				
+				String number = dis.readUTF();
+				String name = dis.readUTF();
+				int age = dis.readInt();
+				String department = dis.readUTF();
+				String position = dis.readUTF();
+				int attendance = dis.readInt();
+				String success = dis.readUTF();	
+				int license = dis.readInt();
+				int newLicense = dis.readInt();
+				int base_Pay = dis.readInt();    
+				int overtime_Allowance = dis.readInt(); 
+				int special_Allowance = dis.readInt(); 
+				int common_Allowance = dis.readInt();
+				int allowance = dis.readInt(); 
+				int tax = dis.readInt();     
+				int salary = dis.readInt();		
+				
+				// 생성자를 통해 넣어준다.
+				s.add(new Information(number, name, age, department, position, attendance, success,
+						license, newLicense, base_Pay, overtime_Allowance, special_Allowance, common_Allowance,
+						allowance, tax, salary
+						));
+				
+				System.out.println("==================");
+				System.out.println("고유번호             /이름  /나이  /부서  /직급 /기본급    /초과근무수당    /특별수당    /공통수당    /전체성과급    /세금    /실수령금액 ");
+				System.out.print(String.format( "%-12s" , number));
+				System.out.print(String.format( "%-5s" , name));
+				System.out.print(String.format( "%-4d" , age));
+				System.out.print(String.format( "%-5s" , department));
+				System.out.print(String.format( "%-5s" , position));
+				System.out.print(String.format( "%-8s" , base_Pay));
+				System.out.print(String.format( "%-10s" , overtime_Allowance));
+				System.out.print(String.format( "%-8s" , special_Allowance));
+				System.out.print(String.format( "%-9s" , common_Allowance));
+				System.out.print(String.format( "%-10s" , allowance));
+				System.out.print(String.format( "%-7s" , tax));
+				System.out.println(String.format( "%-10s" , salary));
+				System.out.println("==================");
+				
+		}dis.close();
+	
+		
+		
+	}
+	
+	
+	//파일 덮어씌우기 방지를 위한 add 하기
+	public void Retire_save(int index) {
+		Information p = v.get(index);
+		
+		s.add(new Information(p.number, p.name, p.age, p.department, p.position, p.attendance, p.success,
+				p.license, p.newLicense, p.base_Pay, p.overtime_Allowance, p.special_Allowance, p.common_Allowance,
+				p.allowance, p.tax, p.salary
+				));
+		
+	}
+	
+	//퇴사자 파일저장하는곳
+	public void SaveDelete(int index) throws Exception {
+		DataOutputStream dos = new DataOutputStream(new FileOutputStream("delete.dat")); //퇴사자 명단 파일저장
+		dos.writeInt(s.size());
+		
+
+		for(int i=0; i<s.size(); i++) {
+			Information p = v.get(index);
+				dos.writeUTF(p.number);
+				dos.writeUTF(p.name);
+				dos.writeInt(p.age);
+				dos.writeUTF(p.department);
+				dos.writeUTF(p.position);
+				dos.writeInt(p.attendance);
+				dos.writeUTF(p.success);	
+				dos.writeInt(p.license); 	
+				dos.writeInt(p.newLicense);
+				dos.writeInt(p.base_Pay); 
+				dos.writeInt(p.overtime_Allowance);
+				dos.writeInt(p.special_Allowance);
+				dos.writeInt(p.common_Allowance);
+				dos.writeInt(p.allowance);
+				dos.writeInt(p.tax);
+				dos.writeInt(p.salary);
+		}
+		
+	}
+	
+	
+	public void Save() throws Exception {  //파일 종료 및 자동저장
+		
+		DataOutputStream dos = new DataOutputStream(new FileOutputStream("test.dat"));
+		dos.writeInt(v.size());
+		
+		//순수하게 하나하나 직접 파일에 찍어준다.
+		
+		for(int i=0; i<v.size(); i++) {
+			Information p = v.get(i);
+			dos.writeUTF(p.number);
+			dos.writeUTF(p.name);
+			dos.writeInt(p.age);
+			dos.writeUTF(p.department);
+			dos.writeUTF(p.position);
+			dos.writeInt(p.attendance);
+			dos.writeUTF(p.success);	
+			dos.writeInt(p.license); 	
+			dos.writeInt(p.newLicense);
+			dos.writeInt(p.base_Pay); 
+			dos.writeInt(p.overtime_Allowance);
+			dos.writeInt(p.special_Allowance);
+			dos.writeInt(p.common_Allowance);
+			dos.writeInt(p.allowance);
+			dos.writeInt(p.tax);
+			dos.writeInt(p.salary);
+			
+		} 
+		
+		System.out.println("성공적으로 저장되었습니다.");
+	} 
+		
+	
+
+}
+ 
